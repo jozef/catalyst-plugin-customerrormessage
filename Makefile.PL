@@ -10,6 +10,7 @@ WriteMakefile(
 		'HTML::Entities'           => 0,
 		'URI::Escape'              => 0,
 		'NEXT'                     => 0,
+		'Carp::Clan'               => 0,
 	},
 	($] >= 5.005 ?     ## Add these new keywords supported since 5.005
 		(ABSTRACT_FROM  => 'lib/Catalyst/Plugin/CustomErrorMessage.pm', # retrieve abstract from module

@@ -8,9 +8,12 @@ Catalyst::Plugin::CustomErrorMessage - Catalyst plugin to have more "cute" error
 
 	use Catalyst qw( CustomErrorMessage );
 	
-	# optional
-	__PACKAGE__->config->{'custome-error-messsage'}->{'uri-for-not-found'} = '/not_found_error';
+	# optional (values in this example are the defaults)
+	__PACKAGE__->config->{'custome-error-messsage'}->{'uri-for-not-found'} = '/';
 	__PACKAGE__->config->{'custome-error-messsage'}->{'error-template'}    = 'error.tt2';
+	__PACKAGE__->config->{'custome-error-messsage'}->{'content-type'}      = 'text/html; charset=utf-8';
+	__PACKAGE__->config->{'custome-error-messsage'}->{'view-name'}         = 'TT';
+	__PACKAGE__->config->{'custome-error-messsage'}->{'response-status'}   = 500;
 
 =head1 DESCRIPTION
 
@@ -39,7 +42,7 @@ use NEXT;
 use strict;
 use warnings;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 
 
 =head1 FUNCTIONS
@@ -66,11 +69,14 @@ For non existing resources (like misspelled url-s) if will do http redirect to
 
 $c->flash->{'finalize_error'} will be set to contain the error message.
 
-This works if you are using Template Toolkit and the view is named "TT".
-The "tutorial" way. If you want it the different way just copy this module, place it
-to the lib/Catalyst/Plugin folder and edit out for your needs. If we can improve
-this example by some config switch, so that it will be more universal, then please let
-me know and i'll put it there. 
+To set different view name configure:
+
+	$c->config->{'custome-error-messsage'}->{'view-name'} = 'Mason';
+
+Content-type and response status can be configured via: 
+
+	$c->config->{'custome-error-messsage'}->{'content-type'}    = 'text/plain; charset=utf-8';
+	$c->config->{'custome-error-messsage'}->{'response-status'} = 500;
 
 =cut
 
@@ -84,12 +90,12 @@ sub finalize_error {
 	}
 	
 	# create error string out of error array
-	my $error = join '', map { encode_entities($_).'<br/> ' } @{ $c->error };
+	my $error = join '<br/> ', map { encode_entities($_) } @{ $c->error };
 	$error ||= 'No output';
 
 	# for wrong url that has no action associated do redirect
 	if (not defined $c->action) {
-		$c->flash->{'finalize_error'} = $error."<br/>";
+		$c->flash->{'finalize_error'} = $error;
 		$c->_save_flash(); # hack but must be called otherwise the flash data will be lost
 		$c->response->redirect($c->uri_for(
 			$c->config->{'custome-error-messsage'}->{'uri-for-not-found'}
@@ -103,13 +109,22 @@ sub finalize_error {
 	# render the template
 	my $action_name = $c->action->reverse;
 	$c->stash->{'finalize_error'} = $action_name.': '.$error;
-	$c->response->content_type('text/html; charset=utf-8');
-	$c->response->body($c->view('TT')->render($c,
+	$c->response->content_type(
+		$c->config->{'custome-error-messsage'}->{'content-type'}
+		||
+		'text/html; charset=utf-8'
+	);
+	
+	my $view_name = $c->config->{'custome-error-messsage'}->{'view-name'} || 'TT';
+	$c->response->body($c->view($view_name)->render($c,
 		$c->config->{'custome-error-messsage'}->{'error-template'}
 		||
 		'error.tt2'
 	));
-	$c->response->status(500);
+	
+	my $response_status = $c->config->{'custome-error-messsage'}->{'response-status'};
+	$response_status = 500 if not defined $response_status;
+	$c->response->status($response_status);
 }
 
 1;
