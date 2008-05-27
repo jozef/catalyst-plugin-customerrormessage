@@ -1,6 +1,10 @@
 Revision history for Perl extension Catalyst::Plugin::CustomErrorMessage.
 
-0.02  Mon Oct 9 18:05:14 2007
+0.03  Tue May 27 08:12:54 2008
+	- calling view in an eval block
+	- config "custome" is now "custom" (but previous also works)
+
+0.02  Mon Oct  9 18:05:14 2007
 	- added:
 		__PACKAGE__->config->{'custome-error-messsage'}->{'content-type'}      = 'text/html; charset=utf-8';
 		__PACKAGE__->config->{'custome-error-messsage'}->{'view-name'}         = 'TT';
@@ -8,5 +12,3 @@ Revision history for Perl extension Catalyst::Plugin::CustomErrorMessage.
 
 0.01  Fri Oct  5 17:57:18 2007
 	- initial version
-
-

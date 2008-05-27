@@ -9,11 +9,11 @@ Catalyst::Plugin::CustomErrorMessage - Catalyst plugin to have more "cute" error
 	use Catalyst qw( CustomErrorMessage );
 	
 	# optional (values in this example are the defaults)
-	__PACKAGE__->config->{'custome-error-messsage'}->{'uri-for-not-found'} = '/';
-	__PACKAGE__->config->{'custome-error-messsage'}->{'error-template'}    = 'error.tt2';
-	__PACKAGE__->config->{'custome-error-messsage'}->{'content-type'}      = 'text/html; charset=utf-8';
-	__PACKAGE__->config->{'custome-error-messsage'}->{'view-name'}         = 'TT';
-	__PACKAGE__->config->{'custome-error-messsage'}->{'response-status'}   = 500;
+	__PACKAGE__->config->{'custom-error-messsage'}->{'uri-for-not-found'} = '/';
+	__PACKAGE__->config->{'custom-error-messsage'}->{'error-template'}    = 'error.tt2';
+	__PACKAGE__->config->{'custom-error-messsage'}->{'content-type'}      = 'text/html; charset=utf-8';
+	__PACKAGE__->config->{'custom-error-messsage'}->{'view-name'}         = 'TT';
+	__PACKAGE__->config->{'custom-error-messsage'}->{'response-status'}   = 500;
 
 =head1 DESCRIPTION
 
@@ -42,7 +42,7 @@ use NEXT;
 use strict;
 use warnings;
 
-our $VERSION = "0.02";
+our $VERSION = "0.03_01";
 
 
 =head1 FUNCTIONS
@@ -53,7 +53,7 @@ In debug mode this function is skipped and user sees the original Catalyst error
 
 In "production" (non debug) mode it will return page with template set in
 
-	$c->config->{'custome-error-messsage'}->{'error-template'}
+	$c->config->{'custom-error-messsage'}->{'error-template'}
 	||
 	'error.tt2'
 
@@ -62,7 +62,7 @@ $c->stash->{'finalize_error'} will be set to contain the error message.
 For non existing resources (like misspelled url-s) if will do http redirect to
 
 	$c->uri_for(
-		$c->config->{'custome-error-messsage'}->{'uri-for-not-found'}
+		$c->config->{'custom-error-messsage'}->{'uri-for-not-found'}
 		||
 		'/'
 	)
@@ -71,17 +71,18 @@ $c->flash->{'finalize_error'} will be set to contain the error message.
 
 To set different view name configure:
 
-	$c->config->{'custome-error-messsage'}->{'view-name'} = 'Mason';
+	$c->config->{'custom-error-messsage'}->{'view-name'} = 'Mason';
 
 Content-type and response status can be configured via: 
 
-	$c->config->{'custome-error-messsage'}->{'content-type'}    = 'text/plain; charset=utf-8';
-	$c->config->{'custome-error-messsage'}->{'response-status'} = 500;
+	$c->config->{'custom-error-messsage'}->{'content-type'}    = 'text/plain; charset=utf-8';
+	$c->config->{'custom-error-messsage'}->{'response-status'} = 500;
 
 =cut
 
 sub finalize_error {
 	my $c = shift;
+	my $config = $c->config->{'custome-error-messsage'} || $c->config->{'custom-error-messsage'};
 	
 	# in debug mode return the original "page" 
 	if ( $c->debug ) {
@@ -98,7 +99,7 @@ sub finalize_error {
 		$c->flash->{'finalize_error'} = $error;
 		$c->_save_flash(); # hack but must be called otherwise the flash data will be lost
 		$c->response->redirect($c->uri_for(
-			$c->config->{'custome-error-messsage'}->{'uri-for-not-found'}
+			$config->{'uri-for-not-found'}
 			||
 			'/'
 		));
@@ -110,19 +111,24 @@ sub finalize_error {
 	my $action_name = $c->action->reverse;
 	$c->stash->{'finalize_error'} = $action_name.': '.$error;
 	$c->response->content_type(
-		$c->config->{'custome-error-messsage'}->{'content-type'}
+		$config->{'content-type'}
 		||
 		'text/html; charset=utf-8'
 	);
+	my $view_name = $config->{'view-name'} || 'TT';
+	eval {
+		$c->response->body($c->view($view_name)->render($c,
+			$config->{'error-template'}
+			||
+			'error.tt2'
+		));
+	};
+	if ($@) {
+		$c->log->error($@);
+		$c->NEXT::finalize_error;
+	}
 	
-	my $view_name = $c->config->{'custome-error-messsage'}->{'view-name'} || 'TT';
-	$c->response->body($c->view($view_name)->render($c,
-		$c->config->{'custome-error-messsage'}->{'error-template'}
-		||
-		'error.tt2'
-	));
-	
-	my $response_status = $c->config->{'custome-error-messsage'}->{'response-status'};
+	my $response_status = $config->{'response-status'};
 	$response_status = 500 if not defined $response_status;
 	$c->response->status($response_status);
 }
@@ -132,8 +138,6 @@ sub finalize_error {
 =head1 AUTHOR
 
 Jozef Kutej - E<lt>jozef@kutej.netE<gt>
-
-Authorization and Accounting contributed by Rubio Vaughan E<lt>rubio@passim.netE<gt>
 
 =head1 TODO
 

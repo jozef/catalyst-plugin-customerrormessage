@@ -3,12 +3,12 @@
 use strict;
 use warnings;
 
-use Test::More; # 'no_plan';
-BEGIN { plan tests => 20 };
+#use Test::More 'no_plan';
+use Test::More 'tests' => 24;
 
 use English;
 
-BEGIN { use_ok('Catalyst::Plugin::CustomErrorMessage') };
+BEGIN { use_ok('Catalyst::Plugin::CustomErrorMessage') or exit };
 
 can_ok('Catalyst::Plugin::CustomErrorMessage', 'finalize_error');
 
@@ -83,6 +83,20 @@ SKIP: {
 	is($c->view->template_name, 'my_error.tt2', 'now template is my_error.tt2');
 	is($c->response->content_type, $content_type, 'now content type is "'.$content_type.'"');
 	is($c->response->status, $response_status, 'now response status is "'.$response_status.'"');
+	
+	
+	# catching errors in the view
+	$c->config({});
+	$c->config->{'custom-error-messsage'}->{'view-name'} = 'BrokenView';
+	$c->flash->{'finalize_error'} = undef;
+	$c->response->body(undef);
+	
+	$c->finalize_error();
+	ok($c->finalize_error_called, 'check if it was really called');
+	
+	is($c->flash->{'finalize_error'}, undef, 'flash empty');
+	is($c->response->body, undef, 'response body empty');
+	like($c->log->error, qr{non_existing_function}, 'error is logged');
 }
 
 
@@ -166,10 +180,11 @@ sub finalize_error_called {
 sub view {
 	my $self      = shift;
 	my $view_name = shift;
-	
+
 	if (defined $view_name) {
 		$self->view_name($view_name);
-		$self->{'last_view_object'} = MyCatalyst::View->new();
+		$view_name = 'MyCatalyst::'.$view_name;
+		$self->{'last_view_object'} = $view_name->new();
 	}
 	
 	return $self->{'last_view_object'};
@@ -180,6 +195,51 @@ sub uri_for {
 	my $path = shift;
 	
 	return $path;
+}
+
+sub log {
+	my $self = shift;
+	return $self->logger;
+}
+
+sub logger {
+	my $self = shift;
+	
+	$self->{'logger'} = MyCatalyst::Logger->new()
+		if (not $self->{'logger'});
+	
+	return $self->{'logger'};
+}
+
+1;
+
+
+=head1 MyCatalyst::Logger
+
+Simple logger for MyCatalyst.
+
+=cut
+
+package MyCatalyst::Logger;
+
+use strict;
+use warnings;
+
+use English;
+use Carp::Clan;
+
+BEGIN {
+	eval "use base 'Class::Accessor::Fast'";
+	
+	if (not $EVAL_ERROR) {
+		__PACKAGE__->mk_accessors(qw{
+			fatal
+			error
+			warn
+			info
+			debug
+		});
+	}
 }
 
 1;
@@ -217,6 +277,80 @@ sub render {
 	croak 'pass template name' if not defined $template_name;
 	
 	$self->template_name($template_name);
+}
+
+1;
+
+
+=head1 MyCatalyst::TT
+
+Custom catalyst view for testing;
+
+=cut
+
+package MyCatalyst::TT;
+
+use strict;
+use warnings;
+
+use English;
+use Carp::Clan;
+
+BEGIN {
+	eval "use base 'Class::Accessor::Fast'";
+	
+	if (not $EVAL_ERROR) {
+		__PACKAGE__->mk_accessors(qw{
+			template_name
+		});
+	}
+}
+
+sub render {
+	my $self          = shift;
+	my $c             = shift;
+	my $template_name = shift;
+	
+	croak 'pass template name' if not defined $template_name;
+	
+	$self->template_name($template_name);
+}
+
+1;
+
+
+=head1 MyCatalyst::BrokenView
+
+Custom catalyst view for testing;
+
+=cut
+
+package MyCatalyst::BrokenView;
+
+use strict;
+use warnings;
+
+use English;
+use Carp::Clan;
+
+BEGIN {
+	eval "use base 'Class::Accessor::Fast'";
+	
+	if (not $EVAL_ERROR) {
+		__PACKAGE__->mk_accessors(qw{
+			template_name
+		});
+	}
+}
+
+sub render {
+	my $self          = shift;
+	my $c             = shift;
+	my $template_name = shift;
+	
+	croak 'pass template name' if not defined $template_name;
+	
+	$self->non_existing_function;
 }
 
 1;
