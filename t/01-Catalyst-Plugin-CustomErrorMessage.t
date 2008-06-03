@@ -10,93 +10,99 @@ use English;
 
 BEGIN { use_ok('Catalyst::Plugin::CustomErrorMessage') or exit };
 
-can_ok('Catalyst::Plugin::CustomErrorMessage', 'finalize_error');
+exit main();
 
-SKIP: {
-	eval "use base 'Class::Accessor::Fast'";	
-	skip 'no "Class::Accessor::Fast" installed skipping fake Catalyst tests.', 22 if $EVAL_ERROR;
-
-	my $c;
+sub main {
+	can_ok('Catalyst::Plugin::CustomErrorMessage', 'finalize_error');
 	
-	diag '> in debug mode';
-	$c = MyCatalyst->new(
-		'debug' => 1,
-		'error' => [
-			'error message1',
-			'error message2',
-		],
-	);
-	$c->finalize_error();
-	ok($c->finalize_error_called, 'check if finalize_error() was really called');
-	ok(!$c->finalize_error_called, 'check internal finalize_error()');
-	is($c->flash->{'finalize_error'}, undef, 'flash empty');
-	is($c->response->body, undef, 'response body empty');
+	SKIP: {
+		eval "use base 'Class::Accessor::Fast'";	
+		skip 'no "Class::Accessor::Fast" installed skipping fake Catalyst tests.', 22 if $EVAL_ERROR;
 	
-	diag '> no action set tests';
-	$c = MyCatalyst->new(
-		'error' => [
-			'error message1',
-			'error message2',
-		],
-	);
-	$c->finalize_error();
-	ok($c->finalize_error_called, 'check if it was really called');
-	is($c->response->redirect, '/', 'default redirect is "/"');
-	is($c->flash->{'finalize_error'}, 'error message1<br/> error message2', 'check error message in flash');
+		my $c;
+		
+		diag '> in debug mode';
+		$c = MyCatalyst->new(
+			'debug' => 1,
+			'error' => [
+				'error message1',
+				'error message2',
+			],
+		);
+		$c->finalize_error();
+		ok($c->finalize_error_called, 'check if finalize_error() was really called');
+		ok(!$c->finalize_error_called, 'check internal finalize_error()');
+		is($c->flash->{'finalize_error'}, undef, 'flash empty');
+		is($c->response->body, undef, 'response body empty');
+		
+		diag '> no action set tests';
+		$c = MyCatalyst->new(
+			'error' => [
+				'error message1',
+				'error message2',
+			],
+		);
+		$c->finalize_error();
+		ok($c->finalize_error_called, 'check if it was really called');
+		is($c->response->redirect, '/', 'default redirect is "/"');
+		is($c->flash->{'finalize_error'}, 'error message1<br/> error message2', 'check error message in flash');
+		
+		# setting non defaults
+		$c->config->{'custome-error-messsage'}->{'uri-for-not-found'} = '/custom';
+		$c->finalize_error();
+		ok($c->finalize_error_called, 'check if it was really called');
+		is($c->response->redirect, '/custom', 'config redirect is "/custom"');
+		
+		
+		
+		diag '> action set tests';
+		$c = MyCatalyst->new(
+			'action' => MyCatalyst::Action->new(),
+			'error'  => [
+				'error message1',
+				'error message2',
+			],
+		);
+		$c->finalize_error();
+		ok($c->finalize_error_called, 'check if it was really called');
+		is($c->view_name, 'TT', 'default view is TT');
+		is($c->view->template_name, 'error.tt2', 'default template is error.tt2');
+		is($c->response->content_type, 'text/html; charset=utf-8', 'default content type is "text/html; charset=utf-8"');
 	
-	# setting non defaults
-	$c->config->{'custome-error-messsage'}->{'uri-for-not-found'} = '/custom';
-	$c->finalize_error();
-	ok($c->finalize_error_called, 'check if it was really called');
-	is($c->response->redirect, '/custom', 'config redirect is "/custom"');
+		# setting non defaults
+		my $view_name       = 'View';
+		my $content_type    = 'text/plain; charset=utf-8';
+		my $error_template  = 'my_error.tt2';
+		my $response_status = 0;
+		$c->config->{'custome-error-messsage'}->{'error-template'}    = $error_template;
+		$c->config->{'custome-error-messsage'}->{'content-type'}      = $content_type;
+		$c->config->{'custome-error-messsage'}->{'view-name'}         = $view_name;
+		$c->config->{'custome-error-messsage'}->{'response-status'}   = $response_status;
 	
+		$c->finalize_error();
+		ok($c->finalize_error_called, 'check if it was really called');
+		
+		is($c->view_name, $view_name, 'now view is "'.$view_name.'"');
+		is($c->view->template_name, 'my_error.tt2', 'now template is my_error.tt2');
+		is($c->response->content_type, $content_type, 'now content type is "'.$content_type.'"');
+		is($c->response->status, $response_status, 'now response status is "'.$response_status.'"');
+		
+		
+		# catching errors in the view
+		$c->config({});
+		$c->config->{'custom-error-messsage'}->{'view-name'} = 'BrokenView';
+		$c->flash->{'finalize_error'} = undef;
+		$c->response->body(undef);
+		
+		$c->finalize_error();
+		ok($c->finalize_error_called, 'check if it was really called');
+		
+		is($c->flash->{'finalize_error'}, undef, 'flash empty');
+		is($c->response->body, undef, 'response body empty');
+		like($c->log->error, qr{non_existing_function}, 'error is logged');
+	}
 	
-	
-	diag '> action set tests';
-	$c = MyCatalyst->new(
-		'action' => MyCatalyst::Action->new(),
-		'error'  => [
-			'error message1',
-			'error message2',
-		],
-	);
-	$c->finalize_error();
-	ok($c->finalize_error_called, 'check if it was really called');
-	is($c->view_name, 'TT', 'default view is TT');
-	is($c->view->template_name, 'error.tt2', 'default template is error.tt2');
-	is($c->response->content_type, 'text/html; charset=utf-8', 'default content type is "text/html; charset=utf-8"');
-
-	# setting non defaults
-	my $view_name       = 'View';
-	my $content_type    = 'text/plain; charset=utf-8';
-	my $error_template  = 'my_error.tt2';
-	my $response_status = 0;
-	$c->config->{'custome-error-messsage'}->{'error-template'}    = $error_template;
-	$c->config->{'custome-error-messsage'}->{'content-type'}      = $content_type;
-	$c->config->{'custome-error-messsage'}->{'view-name'}         = $view_name;
-	$c->config->{'custome-error-messsage'}->{'response-status'}   = $response_status;
-
-	$c->finalize_error();
-	ok($c->finalize_error_called, 'check if it was really called');
-	
-	is($c->view_name, $view_name, 'now view is "'.$view_name.'"');
-	is($c->view->template_name, 'my_error.tt2', 'now template is my_error.tt2');
-	is($c->response->content_type, $content_type, 'now content type is "'.$content_type.'"');
-	is($c->response->status, $response_status, 'now response status is "'.$response_status.'"');
-	
-	
-	# catching errors in the view
-	$c->config({});
-	$c->config->{'custom-error-messsage'}->{'view-name'} = 'BrokenView';
-	$c->flash->{'finalize_error'} = undef;
-	$c->response->body(undef);
-	
-	$c->finalize_error();
-	ok($c->finalize_error_called, 'check if it was really called');
-	
-	is($c->flash->{'finalize_error'}, undef, 'flash empty');
-	is($c->response->body, undef, 'response body empty');
-	like($c->log->error, qr{non_existing_function}, 'error is logged');
+	return 0;
 }
 
 
