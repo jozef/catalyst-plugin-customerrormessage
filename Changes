@@ -3,6 +3,7 @@ Revision history for Perl extension Catalyst::Plugin::CustomErrorMessage.
 0.03  Tue May 27 08:12:54 2008
 	- calling view in an eval block
 	- config "custome" is now "custom" (but previous also works)
+	- migrated to the Module::Build so that build_requires can be set
 
 0.02  Mon Oct  9 18:05:14 2007
 	- added:

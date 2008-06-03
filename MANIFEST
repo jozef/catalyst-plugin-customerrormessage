@@ -1,8 +1,10 @@
 Changes
 Makefile.PL
+Build.PL
 MANIFEST
 README
 t/00-distribution.t
 t/00-signature.t
 t/01-Catalyst-Plugin-CustomErrorMessage.t
 lib/Catalyst/Plugin/CustomErrorMessage.pm
+META.yml
