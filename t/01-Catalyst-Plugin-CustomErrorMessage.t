@@ -14,7 +14,7 @@ can_ok('Catalyst::Plugin::CustomErrorMessage', 'finalize_error');
 
 SKIP: {
 	eval "use base 'Class::Accessor::Fast'";	
-	skip 'no "Class::Accessor::Fast" installed skipping fake Catalyst tests.', 18 if $EVAL_ERROR;
+	skip 'no "Class::Accessor::Fast" installed skipping fake Catalyst tests.', 22 if $EVAL_ERROR;
 
 	my $c;
 	
