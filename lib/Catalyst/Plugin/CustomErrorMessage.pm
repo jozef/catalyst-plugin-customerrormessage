@@ -42,7 +42,7 @@ use NEXT;
 use strict;
 use warnings;
 
-our $VERSION = "0.03_02";
+our $VERSION = "0.03_03";
 
 
 =head1 FUNCTIONS
