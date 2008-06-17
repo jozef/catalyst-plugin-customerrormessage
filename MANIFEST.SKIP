@@ -26,3 +26,6 @@
 \b\.#
 \.cvsignore
 \.svnignore
+
+Catalyst-Plugin-CustomErrorMessage-.+
+
