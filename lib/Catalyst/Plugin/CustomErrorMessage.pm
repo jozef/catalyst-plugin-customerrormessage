@@ -9,11 +9,11 @@ Catalyst::Plugin::CustomErrorMessage - Catalyst plugin to have more "cute" error
 	use Catalyst qw( CustomErrorMessage );
 	
 	# optional (values in this example are the defaults)
-	__PACKAGE__->config->{'custom-error-messsage'}->{'uri-for-not-found'} = '/';
-	__PACKAGE__->config->{'custom-error-messsage'}->{'error-template'}    = 'error.tt2';
-	__PACKAGE__->config->{'custom-error-messsage'}->{'content-type'}      = 'text/html; charset=utf-8';
-	__PACKAGE__->config->{'custom-error-messsage'}->{'view-name'}         = 'TT';
-	__PACKAGE__->config->{'custom-error-messsage'}->{'response-status'}   = 500;
+	__PACKAGE__->config->{'custom-error-message'}->{'uri-for-not-found'} = '/';
+	__PACKAGE__->config->{'custom-error-message'}->{'error-template'}    = 'error.tt2';
+	__PACKAGE__->config->{'custom-error-message'}->{'content-type'}      = 'text/html; charset=utf-8';
+	__PACKAGE__->config->{'custom-error-message'}->{'view-name'}         = 'TT';
+	__PACKAGE__->config->{'custom-error-message'}->{'response-status'}   = 500;
 
 =head1 DESCRIPTION
 
@@ -53,7 +53,7 @@ In debug mode this function is skipped and user sees the original Catalyst error
 
 In "production" (non debug) mode it will return page with template set in
 
-	$c->config->{'custom-error-messsage'}->{'error-template'}
+	$c->config->{'custom-error-message'}->{'error-template'}
 	||
 	'error.tt2'
 
@@ -62,7 +62,7 @@ $c->stash->{'finalize_error'} will be set to contain the error message.
 For non existing resources (like misspelled url-s) if will do http redirect to
 
 	$c->uri_for(
-		$c->config->{'custom-error-messsage'}->{'uri-for-not-found'}
+		$c->config->{'custom-error-message'}->{'uri-for-not-found'}
 		||
 		'/'
 	)
@@ -71,18 +71,18 @@ $c->flash->{'finalize_error'} will be set to contain the error message.
 
 To set different view name configure:
 
-	$c->config->{'custom-error-messsage'}->{'view-name'} = 'Mason';
+	$c->config->{'custom-error-message'}->{'view-name'} = 'Mason';
 
 Content-type and response status can be configured via: 
 
-	$c->config->{'custom-error-messsage'}->{'content-type'}    = 'text/plain; charset=utf-8';
-	$c->config->{'custom-error-messsage'}->{'response-status'} = 500;
+	$c->config->{'custom-error-message'}->{'content-type'}    = 'text/plain; charset=utf-8';
+	$c->config->{'custom-error-message'}->{'response-status'} = 500;
 
 =cut
 
 sub finalize_error {
 	my $c = shift;
-	my $config = $c->config->{'custome-error-messsage'} || $c->config->{'custom-error-messsage'};
+	my $config = $c->config->{'custom-error-message'} || $c->config->{'custome-error-messsage'} || $c->config->{'custom-error-messsage'};
 	
 	# in debug mode return the original "page" 
 	if ( $c->debug ) {
