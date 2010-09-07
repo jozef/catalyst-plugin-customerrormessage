@@ -3,14 +3,17 @@
 \bCVS\b
 ,v$
 \B\.svn\b
+^\.git
+\.cvsignore
+\.svnignore
 
 # Avoid Makemaker generated and utility files.
-\bMakefile$
+^Makefile$
 \bblib
 \bMakeMaker-\d
 \bpm_to_blib$
 \bblibdirs$
-^MANIFEST\.SKIP$
+^MANIFEST\.(SKIP|bak)$
 
 # Avoid Module::Build generated and utility files.
 \bBuild$
@@ -24,8 +27,9 @@
 \.bak$
 \#$
 \b\.#
-\.cvsignore
-\.svnignore
 
-Catalyst-Plugin-CustomErrorMessage-.+
+^tmp/
+.*\.tar\.gz
+^MYMETA.yml$
+^Catalyst-Plugin-CustomErrorMessage-
 

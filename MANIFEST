@@ -6,7 +6,6 @@ MANIFEST
 META.yml
 README
 t/00-distribution.t
-t/00-signature.t
 t/01-Catalyst-Plugin-CustomErrorMessage.t
 t/pod-coverage.t
 t/pod.t
