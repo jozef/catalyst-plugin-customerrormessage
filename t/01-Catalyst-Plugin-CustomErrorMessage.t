@@ -119,7 +119,7 @@ use warnings;
 
 use English;
 use Carp::Clan;
-use NEXT;
+use MRO::Compat;
 
 use base 'Catalyst::Plugin::CustomErrorMessage';
 
@@ -141,11 +141,13 @@ BEGIN {
 	}
 }
 
+use Class::C3;
+
 sub new {
 	my $class = shift;
 	my %args  = @_;
 	
-	my $self = $class->SUPER::new(\%args);
+	my $self = $class->next::method(\%args);
 	
 	$self->response(MyCatalyst::Response->new());
 	$self->flash({})  if not defined $self->flash;
@@ -158,7 +160,7 @@ sub new {
 sub finalize_error {
 	my $self = shift;
 	
-	$self->NEXT::ACTUAL::finalize_error;
+	$self->next::method;
 	
 	$self->finalize_error_called(1);
 }

@@ -1,7 +1,10 @@
 Revision history for Perl extension Catalyst::Plugin::CustomErrorMessage.
 
+0.05  Tue, 07 Sep 2010 16:58:24 +0200
+    - #60723 replaced 'use NEXT;' by 'use MRO::Compat;' (thanks to Sven - NIERLEIN@cpan.org)
+
 0.04  Tue Oct  6 12:49:20 2009
-	- config "messsage" is now "message"
+	- config "messsage" is now "message" (thanks to Oldřich Krůza)
 
 0.03  Tue May 27 08:12:54 2008
 	- calling view in an eval block

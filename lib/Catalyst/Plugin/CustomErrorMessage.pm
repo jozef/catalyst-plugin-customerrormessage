@@ -37,12 +37,12 @@ use base qw{ Class::Data::Inheritable };
 
 use HTML::Entities;
 use URI::Escape qw{ uri_escape_utf8 };
-use NEXT;
+use MRO::Compat;
 
 use strict;
 use warnings;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 
 =head1 FUNCTIONS
@@ -86,7 +86,7 @@ sub finalize_error {
 	
 	# in debug mode return the original "page" 
 	if ( $c->debug ) {
-		$c->NEXT::finalize_error;
+		$c->maybe::next::method;
 		return;
 	}
 	
@@ -125,7 +125,7 @@ sub finalize_error {
 	};
 	if ($@) {
 		$c->log->error($@);
-		$c->NEXT::finalize_error;
+		$c->maybe::next::method;
 	}
 	
 	my $response_status = $config->{'response-status'};
@@ -137,11 +137,7 @@ sub finalize_error {
 
 =head1 AUTHOR
 
-Jozef Kutej - E<lt>jozef@kutej.netE<gt>
-
-=head1 TODO
-
-More universal? Looking forward for your suggestions.
+Jozef Kutej - E<lt>jkutej@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

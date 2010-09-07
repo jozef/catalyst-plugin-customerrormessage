@@ -11,7 +11,7 @@ my $builder = Module::Build->new(
 		'Class::Data::Inheritable' => 0,
 		'HTML::Entities'           => 0,
 		'URI::Escape'              => 0,
-		'NEXT'                     => 0,
+		'MRO::Compat'              => 0,
     },
     build_requires => {
         'Test::More'               => 0,
