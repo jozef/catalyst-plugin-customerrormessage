@@ -1,5 +1,8 @@
 Revision history for Perl extension Catalyst::Plugin::CustomErrorMessage.
 
+0.06  Thu, 09 Sep 2010 13:35:31 +0200
+    - removed unneeded dependency
+
 0.05  Tue, 07 Sep 2010 16:58:24 +0200
     - #60723 replaced 'use NEXT;' by 'use MRO::Compat;' (thanks to Sven - NIERLEIN@cpan.org)
 

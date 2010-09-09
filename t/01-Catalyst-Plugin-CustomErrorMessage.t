@@ -141,8 +141,6 @@ BEGIN {
 	}
 }
 
-use Class::C3;
-
 sub new {
 	my $class = shift;
 	my %args  = @_;
